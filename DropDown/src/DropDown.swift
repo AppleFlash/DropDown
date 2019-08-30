@@ -14,6 +14,7 @@ public typealias SelectionClosure = (Index, String) -> Void
 public typealias MultiSelectionClosure = ([Index], [String]) -> Void
 public typealias ConfigurationClosure = (Index, String) -> String
 public typealias CellConfigurationClosure = (Index, String, DropDownCell) -> Void
+public typealias CellSelectionClosure = (Index) -> Void
 private typealias ComputeLayoutTuple = (x: CGFloat, y: CGFloat, width: CGFloat, offscreenHeight: CGFloat)
 
 /// Can be `UIView` or `UIBarButtonItem`.
@@ -421,6 +422,9 @@ public final class DropDown: UIView {
     The single selection action will still be called if provided.
     */
     public var multiSelectionAction: MultiSelectionClosure?
+    
+    /// Always invokes when tableView(_:didSelectRowAt:) is triggered
+    public var cellSelectionAction: CellSelectionClosure?
 
 	/// The action to execute when the drop down will show.
 	public var willShowAction: Closure?
@@ -1084,6 +1088,9 @@ extension DropDown: UITableViewDataSource, UITableViewDelegate {
 	public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		let selectedRowIndex = (indexPath as NSIndexPath).row
         
+        defer {
+            cellSelectionAction?(selectedRowIndex)
+        }
         
         // are we in multi-selection mode?
         if let multiSelectionCallback = multiSelectionAction {
